@@ -1,20 +1,72 @@
-name: Content Agent Contract Tests
+name: Content Agent Checks
 on:
   push:
     branches:
       - test/content-agent-ab-contract
+    paths:
+      - 'lib/content-agent/**'
+      - 'tests/content-agent*.cjs'
+      - 'components/GrowthLoopDashboard.tsx'
+      - 'components/GrantReadyCampaign.tsx'
+      - 'app/grantready/**'
+      - 'app/page.tsx'
+      - 'app/layout.tsx'
+      - 'app/globals.css'
+      - 'data/seed/**'
+      - 'data/examples/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'next.config.ts'
+      - 'eslint.config.mjs'
+      - '.gitignore'
+      - 'README.md'
+      - '.github/workflows/content-agent-contract.yml'
+  pull_request:
+    branches:
+      - feature/content-agent
+    paths:
+      - 'lib/content-agent/**'
+      - 'tests/content-agent*.cjs'
+      - 'components/GrowthLoopDashboard.tsx'
+      - 'components/GrantReadyCampaign.tsx'
+      - 'app/grantready/**'
+      - 'app/page.tsx'
+      - 'app/layout.tsx'
+      - 'app/globals.css'
+      - 'data/seed/**'
+      - 'data/examples/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'next.config.ts'
+      - 'eslint.config.mjs'
+      - '.gitignore'
+      - 'README.md'
+      - '.github/workflows/content-agent-contract.yml'
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   content-contract:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - name: Compile isolated Content Agent modules
-        run: npx tsc --target es2022 --module commonjs --moduleResolution node --skipLibCheck --esModuleInterop --outDir .content-agent-test-build lib/content-agent/claim-registry.ts lib/content-agent/validate-brief.ts lib/content-agent/generate-posts.ts lib/content-agent/revision-loop.ts lib/content-agent/approve-posts.ts
-      - name: Run Content Agent tests
-        run: node --test tests/content-agent.test.cjs tests/content-agent-ab-contract.test.cjs tests/content-agent-claims.test.cjs
+      - name: Run complete Content Agent suite
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Production build with local fonts
+        run: npm run build
+      - name: Check submitted patch whitespace
+        run: git diff --check HEAD^ HEAD

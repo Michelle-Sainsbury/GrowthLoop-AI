@@ -1,0 +1,59 @@
+{
+  "schema_version": "gl02-proposal-1.0",
+  "authorization_state": "approved_for_demo",
+  "scope": "Content-only evaluation and opt-in GrantReady adapter validation; not a shared controller or universal semantic fact-check.",
+  "rules": [
+    {
+      "id": "award_guarantee",
+      "reason": "No funding or grant-award guarantees.",
+      "patterns": [
+        "guarantee(?:d|s)?\\s+(?:your\\s+next\\s+)?grant\\s+awards?",
+        "guarantee(?:d|s)?\\s+funding"
+      ]
+    },
+    {
+      "id": "eligibility_guarantee",
+      "reason": "No guaranteed eligibility or determinations.",
+      "patterns": [
+        "guarantee(?:d|s)?\\s+eligibility",
+        "eligible\\s+for\\s+every\\s+grant"
+      ]
+    },
+    {
+      "id": "fabricated_amount",
+      "reason": "No invented funding amounts or financial outcomes.",
+      "patterns": [
+        "\\$\\s*\\d[\\d,.]*(?:\\s*(?:million|billion|thousand))?",
+        "\\b\\d+(?:\\.\\d+)?\\s+(?:million|billion)\\s+dollars?"
+      ]
+    },
+    {
+      "id": "fabricated_success_rate",
+      "reason": "No fabricated numerical success rates or performance percentages.",
+      "patterns": [
+        "\\b\\d+(?:\\.\\d+)?\\s*(?:%|percent)"
+      ]
+    },
+    {
+      "id": "automatic_submission",
+      "reason": "No claim of functioning automatic application submission.",
+      "patterns": [
+        "automatically\\s+submit(?:s|ted)?",
+        "automatic\\s+application\\s+submission"
+      ]
+    },
+    {
+      "id": "unsupported_capability",
+      "reason": "Do not describe hypothetical GrantReady as a functioning discovery, eligibility, or submission service.",
+      "patterns": [
+        "searches every funder database",
+        "determines your organization.{0,5}eligibility",
+        "available now",
+        "operating platform",
+        "start using the service now"
+      ]
+    }
+  ],
+  "reviewer": "Michelle Sainsbury",
+  "reviewed_at": "2026-11-02"
+}

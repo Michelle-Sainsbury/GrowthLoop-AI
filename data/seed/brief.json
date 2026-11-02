@@ -1,0 +1,30 @@
+{
+  "schema_version": "gl02-proposal-1.0",
+  "campaign_id": "grantready-nyc-readiness",
+  "authorization_state": "approved_for_demo",
+  "product": "GrantReady",
+  "description": "A hypothetical service concept focused on helping nonprofit leaders organize funding-readiness activities, clarify program narratives, identify documentation gaps, and prepare for funding opportunities.",
+  "campaignGoal": "Encourage informed conversations about nonprofit funding preparation",
+  "keyMessage": "Strong funding preparation begins with clear program goals, organized information, credible evidence, and realistic expectations.",
+  "tone": [
+    "professional",
+    "knowledgeable",
+    "practical",
+    "community-centered",
+    "respectful of operational pressures"
+  ],
+  "disclaimer": "GrantReady is a hypothetical service concept used for a GrowthLoop AI marketing demonstration. It is not an operating grant discovery, eligibility, application-submission, or grant-award service.",
+  "selected_claim_ids": [
+    "GR-P01",
+    "GR-P02"
+  ],
+  "out_of_scope": [
+    "Grant discovery or matching engine",
+    "Eligibility determinations",
+    "Automatic application submission",
+    "Funding or award predictions",
+    "Claims of actual customer outcomes"
+  ],
+  "reviewer": "Michelle Sainsbury",
+  "reviewed_at": "2026-11-02"
+}

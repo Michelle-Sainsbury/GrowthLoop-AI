@@ -1,3 +1,7 @@
+> **Michelle’s Content-only GrantReady entry point:** `/grantready` loads the authorized demonstration seed package and protects generation, both revisions, and human approval. GR-P01, GR-P02, the brief, ICP and content policy have recorded demo authorization dated 2026-11-02. Generated drafts still require a separate explicit human decision. The original Week 1 dashboard at `/` is unchanged. See [GrantReady setup and limitations](data/seed/README.md). Run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build`. This route is deterministic and does not call Analytics, a database, or a paid model API.
+
+The current Content-only implementation and verification are documented in [the GrantReady guide](data/seed/README.md). The repository-wide architecture and planned commands below are retained from the October 21 baseline; they do not describe features implemented or verified by this Content Agent PR.
+
 # GrowthLoop AI
 
 **Evidence-Driven Marketing Optimization · Two-Agent, Human-Supervised Demo MVP**  

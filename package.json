@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:content": "tsc --target es2022 --module commonjs --moduleResolution node --skipLibCheck --esModuleInterop --outDir .content-agent-test-build lib/content-agent/claim-registry.ts lib/content-agent/validate-brief.ts lib/content-agent/generate-posts.ts lib/content-agent/revision-loop.ts lib/content-agent/approve-posts.ts lib/content-agent/grantready-campaign.ts lib/content-agent/grantready-workflow.ts lib/content-agent/grantready-store.ts && node --test tests/content-agent.test.cjs tests/content-agent-ab-contract.test.cjs tests/content-agent-claims.test.cjs tests/content-agent-grantready.test.cjs tests/content-agent-grantready-workflow.test.cjs",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "npm run test:content"
   },
   "dependencies": {
+    "geist": "1.8.2",
     "next": "16.4.2",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

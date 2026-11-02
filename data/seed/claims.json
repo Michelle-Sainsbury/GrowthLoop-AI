@@ -1,0 +1,71 @@
+{
+  "schema_version": "gl02-proposal-1.0",
+  "registry_version": "grantready-claims-v2",
+  "authorization_state": "approved_for_demo",
+  "metadata_policy": "Michelle Sainsbury explicitly approved only GR-P01 and GR-P02 as hypothetical/demo-only concept claims on 2026-11-02. This does not approve the campaign brief, ICP, policy, evaluation examples, or any generated LinkedIn draft. Rejected policy examples remain rejected with their existing metadata. Concept provenance is separate from this recorded approval.",
+  "claims": [
+    {
+      "claim_id": "GR-P01",
+      "text": "GrantReady is a hypothetical nonprofit grant-readiness service concept, not a functioning grant-finding product.",
+      "status": "approved_demo_claim",
+      "source_or_evidence": "Derived by Codex from the proposed demonstration positioning contained in the GL-02 request submitted in this session. Original authorship is not established. This records concept provenance only—not evidence of an operating product, measured outcomes, or Michelle’s approval.",
+      "reviewer": "Michelle Sainsbury",
+      "reviewed_at": "2026-11-02",
+      "demo_only": true
+    },
+    {
+      "claim_id": "GR-P02",
+      "text": "The proposed GrantReady concept focuses on organizing funding-readiness activities, clarifying program narratives, and identifying documentation gaps.",
+      "status": "approved_demo_claim",
+      "source_or_evidence": "Derived by Codex from the proposed demonstration positioning contained in the GL-02 request submitted in this session. Original authorship is not established. This records concept provenance only—not evidence of an operating product, measured outcomes, or Michelle’s approval.",
+      "reviewer": "Michelle Sainsbury",
+      "reviewed_at": "2026-11-02",
+      "demo_only": true
+    },
+    {
+      "claim_id": "GR-X01",
+      "text": "GrantReady guarantees your next grant award.",
+      "status": "rejected_claim",
+      "source_or_evidence": "Excluded by Michelle’s explicit GL-02 safety instructions. Fabricated negative evaluation example, not a statement of actual product capability or results.",
+      "reviewer": null,
+      "reviewed_at": null,
+      "demo_only": true
+    },
+    {
+      "claim_id": "GR-X02",
+      "text": "GrantReady guarantees eligibility for every funding opportunity.",
+      "status": "rejected_claim",
+      "source_or_evidence": "Excluded by Michelle’s explicit GL-02 safety instructions. Fabricated negative evaluation example, not a statement of actual product capability or results.",
+      "reviewer": null,
+      "reviewed_at": null,
+      "demo_only": true
+    },
+    {
+      "claim_id": "GR-X03",
+      "text": "GrantReady has secured $5 million for nonprofit clients.",
+      "status": "rejected_claim",
+      "source_or_evidence": "Excluded by Michelle’s explicit GL-02 safety instructions. Fabricated negative evaluation example, not a statement of actual product capability or results.",
+      "reviewer": null,
+      "reviewed_at": null,
+      "demo_only": true
+    },
+    {
+      "claim_id": "GR-X04",
+      "text": "GrantReady customers achieve a 95% grant success rate.",
+      "status": "rejected_claim",
+      "source_or_evidence": "Excluded by Michelle’s explicit GL-02 safety instructions. Fabricated negative evaluation example, not a statement of actual product capability or results.",
+      "reviewer": null,
+      "reviewed_at": null,
+      "demo_only": true
+    },
+    {
+      "claim_id": "GR-X05",
+      "text": "GrantReady automatically submits grant applications for you.",
+      "status": "rejected_claim",
+      "source_or_evidence": "Excluded by Michelle’s explicit GL-02 safety instructions. Fabricated negative evaluation example, not a statement of actual product capability or results.",
+      "reviewer": null,
+      "reviewed_at": null,
+      "demo_only": true
+    }
+  ]
+}

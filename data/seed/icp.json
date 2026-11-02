@@ -1,0 +1,21 @@
+{
+  "schema_version": "gl02-proposal-1.0",
+  "authorization_state": "approved_for_demo",
+  "audience": "NYC nonprofit executive directors, program directors, and organizational leaders",
+  "geography": "New York City",
+  "context": "Leaders balancing service delivery, staff capacity, reporting, program administration, and funding preparation. These are campaign framing assumptions, not surveyed customer findings.",
+  "needs": [
+    "Clear program goals and narratives",
+    "Organized supporting documentation",
+    "Credible evidence with realistic limitations",
+    "Preparation that respects existing workloads"
+  ],
+  "communication_preferences": [
+    "Practical language without jargon or AI hype",
+    "Respect for community knowledge and leadership",
+    "No implication that funding challenges reflect a lack of effort"
+  ],
+  "provenance": "Derived by Codex from the proposed demonstration positioning contained in the GL-02 request submitted in this session. Original authorship is not established. This records concept provenance only—not evidence of an operating product, measured outcomes, or Michelle’s approval.",
+  "reviewer": "Michelle Sainsbury",
+  "reviewed_at": "2026-11-02"
+}

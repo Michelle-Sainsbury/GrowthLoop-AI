@@ -1,0 +1,104 @@
+{
+  "schema_version": "gl02-proposal-1.0",
+  "authorization_state": "pending_michelle_review",
+  "notice": "Pre-authored evaluation samples, not actual campaign outputs or product results. Compliant means consistent with the proposed policy, not authorized for publication. Noncompliant samples intentionally contain false claims and must never be used as campaign inputs.",
+  "examples": [
+    {
+      "id": "G01",
+      "label": "compliant",
+      "title": "Community-centered preparation",
+      "draft": "Nonprofit leaders keep essential services moving while balancing staffing, reporting, and funding deadlines. Preparation has to respect that reality.\n\nGrantReady is a hypothetical nonprofit grant-readiness service concept, not a functioning grant-finding product. This demonstration explores a practical question: what information would help a team explain its program goals and identify documentation gaps before an opportunity appears?\n\nClear goals, organized records, and credible evidence can make a funding conversation more informed. They do not promise eligibility or an award. What preparation task would you put first?",
+      "claim_ids": [
+        "GR-P01"
+      ],
+      "expected_reasons": []
+    },
+    {
+      "id": "G02",
+      "label": "compliant",
+      "title": "Program narrative and evidence",
+      "draft": "A strong program narrative connects a community-defined need, the work a team actually delivers, and evidence it can explain responsibly. Housing and community-service leaders know that the numbers need context and the stories need care.\n\nThe proposed GrantReady concept focuses on organizing funding-readiness activities, clarifying program narratives, and identifying documentation gaps. GrantReady is hypothetical; this is demonstration marketing, not an available product or a funding recommendation.\n\nWhich part of your narrative needs the clearest connection between goals, activities, and evidence?",
+      "claim_ids": [
+        "GR-P02"
+      ],
+      "expected_reasons": []
+    },
+    {
+      "id": "G03",
+      "label": "compliant",
+      "title": "Practical documentation conversation",
+      "draft": "Before a funding conversation, consider a manageable readiness check: clarify the program goal, locate the supporting records, note evidence limitations, and identify who can answer follow-up questions. Start with the information you have rather than a promise you cannot support.\n\nGrantReady is a hypothetical nonprofit grant-readiness service concept, not a functioning grant-finding product. The example is intended to open a conversation about preparation while recognizing the pressure on nonprofit teams.\n\nWhat document or process would make your next internal planning discussion more productive?",
+      "claim_ids": [
+        "GR-P01"
+      ],
+      "expected_reasons": []
+    },
+    {
+      "id": "G04",
+      "label": "compliant",
+      "title": "Realistic leadership expectations",
+      "draft": "Preparing for funding is part of responsible program administration, not a shortcut around funder requirements or community priorities. Leaders need room to discuss what is ready, what is missing, and what remains uncertain.\n\nThe proposed GrantReady concept focuses on organizing funding-readiness activities, clarifying program narratives, and identifying documentation gaps. This is a hypothetical concept for a GrowthLoop AI demonstration; no operating grant service, customer outcomes, or award promises are being presented.\n\nHow does your team decide what to prepare now and what to revisit when a specific opportunity is available?",
+      "claim_ids": [
+        "GR-P02"
+      ],
+      "expected_reasons": []
+    },
+    {
+      "id": "B01",
+      "label": "noncompliant",
+      "title": "Guaranteed award and eligibility",
+      "draft": "Your nonprofit should never have to wait for funding again. GrantReady guarantees your next grant award and guarantees eligibility for every funding opportunity. Our service takes uncertainty out of your funding plan so your leadership team can focus entirely on programs.\n\nJoin us today and stop worrying about whether your next proposal will be accepted.",
+      "claim_ids": [
+        "GR-X01",
+        "GR-X02"
+      ],
+      "expected_reasons": [
+        "award_guarantee",
+        "eligibility_guarantee",
+        "missing_hypothetical_disclosure",
+        "rejected_claim"
+      ]
+    },
+    {
+      "id": "B02",
+      "label": "noncompliant",
+      "title": "Fabricated financial results and success rate",
+      "draft": "NYC nonprofit leaders deserve proven results. GrantReady has secured $5 million for nonprofit clients, and GrantReady customers achieve a 95% grant success rate. Those numbers show that our process works across housing, community services, and program administration.\n\nPut our track record to work for your organization and plan your next budget with confidence.",
+      "claim_ids": [
+        "GR-X03",
+        "GR-X04"
+      ],
+      "expected_reasons": [
+        "fabricated_amount",
+        "fabricated_success_rate",
+        "missing_hypothetical_disclosure",
+        "rejected_claim"
+      ]
+    },
+    {
+      "id": "B03",
+      "label": "noncompliant",
+      "title": "Unsupported automatic submission",
+      "draft": "GrantReady automatically submits grant applications for you. Skip the internal coordination, documentation checks, and final sign-off: our operating platform handles the process while your staff keep services running.\n\nThis hypothetical demonstration shows how easy it is to replace your application workflow. Start using the service now.",
+      "claim_ids": [
+        "GR-X05"
+      ],
+      "expected_reasons": [
+        "automatic_submission",
+        "rejected_claim",
+        "unsupported_capability"
+      ]
+    },
+    {
+      "id": "B04",
+      "label": "noncompliant",
+      "title": "Invented live discovery capability without disclosure",
+      "draft": "Meet the grant partner your organization has been waiting for. GrantReady searches every funder database in real time, determines your organization’s eligibility, and delivers a complete list of suitable opportunities. It is available now to nonprofit teams across New York City.\n\nGive your directors a finished funding pipeline without adding another task to their day. Request access today.",
+      "claim_ids": [],
+      "expected_reasons": [
+        "missing_hypothetical_disclosure",
+        "unsupported_capability"
+      ]
+    }
+  ]
+}
