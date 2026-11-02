@@ -26,3 +26,79 @@ test('approved real claim wording survives three test-only cycles without record
 
 test('actual authorized campaign completes generation and revisions but never auto-approves drafts',()=>{const data=structuredClone(seed),f=new GrantReadyWorkflow(data);cycle(f,data,3);assert.equal(f.view().loop.history.length,3);assert.equal(f.view().approvedId,null);const before=f.view();assert.throws(()=>f.approve(data,'B',false,3),/Human approval/);assert.deepEqual(f.view(),before);});
 test('explicit human approval contract works with actual campaign data in disposable test memory only',()=>{const data=structuredClone(seed),testSession=new GrantReadyWorkflow(data);cycle(testSession,data,3);const simulatedHumanDecision=true;assert.equal(testSession.approve(data,'B',simulatedHumanDecision,3).approvedId,'B');assert.throws(()=>testSession.revise(data,'shorter',3),/stopped/);});
+
+// Disposable synthetic decisions only; never the user's deployed sessions.
+const {createMemoryCampaignStorage,createRedisCampaignStorage,configuredCampaignStorage}=require('../.content-agent-test-build/grantready-storage.js');
+function sharedStores(){const backend=createMemoryCampaignStorage();const data=fixture();return {backend,data,a:createGrantReadyStore(async()=>structuredClone(data),backend),b:createGrantReadyStore(async()=>structuredClone(data),backend)};}
+test('shared backend survives instance change through all three cycles and B approval',async()=>{const {a,b}=sharedStores();const s=await a.begin();await b.act(s.token,1,'revise','shorter');await a.act(s.token,2,'revise','more detail and a question');await b.act(s.token,3,'approve','B',true);const status=await a.status(s.token);assert.equal(status.view.approvedId,'B');assert.equal(status.view.loop.history.length,3);assert.ok(status.approvedAt);});
+test('lost response and restart recover the same B approval receipt',async()=>{const {a,b,backend,data}=sharedStores();const s=await a.begin();await b.act(s.token,1,'approve','B',true);const first=await a.status(s.token);const restarted=createGrantReadyStore(async()=>structuredClone(data),backend);assert.deepEqual(await restarted.status(s.token),first);assert.equal((await restarted.act(s.token,1,'approve','B',true)).approvedId,'B');assert.deepEqual(await restarted.status(s.token),first);});
+test('concurrent repeated B clicks record only B once',async()=>{const {a,b}=sharedStores();const s=await a.begin();const results=await Promise.all([a.act(s.token,1,'approve','B',true),b.act(s.token,1,'approve','B',true)]);assert.ok(results.every(v=>v.approvedId==='B'));assert.equal((await a.status(s.token)).view.approvedId,'B');});
+test('concurrent conflicting decisions allow exactly one winner',async()=>{const {a,b}=sharedStores();const s=await a.begin();const results=await Promise.allSettled([a.act(s.token,1,'approve','A',true),b.act(s.token,1,'approve','B',true)]);assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(results.filter(r=>r.status==='rejected').length,1);const winner=results.find(r=>r.status==='fulfilled').value.approvedId;assert.equal((await a.status(s.token)).view.approvedId,winner);});
+test('human confirmation remains required even for idempotent approval',async()=>{const {a}=sharedStores(),s=await a.begin();await a.act(s.token,1,'approve','B',true);await assert.rejects(a.act(s.token,1,'approve','B',false),/Human approval/);await assert.rejects(a.act(s.token,1,'approve','A',true),/already approved/);});
+test('missing session never reports approval success',async()=>{const {a}=sharedStores();await assert.rejects(a.status('missing'),/cannot be confirmed/);await assert.rejects(a.act('missing',1,'approve','B',true),/cannot be confirmed/);});
+test('storage write failure leaves original campaign unapproved',async()=>{const {a,backend,data}=sharedStores(),s=await a.begin();const broken={get:k=>backend.get(k),compareAndSet:async()=>{throw new Error('Synthetic storage outage')}};const b=createGrantReadyStore(async()=>data,broken);await assert.rejects(b.act(s.token,1,'approve','B',true),/outage/);assert.equal((await a.status(s.token)).view.approvedId,null);});
+test('committed write with lost response is resolved by status, not contradictory retry',async()=>{const {a,backend,data}=sharedStores(),s=await a.begin();const uncertain={get:k=>backend.get(k),compareAndSet:async(...args)=>{await backend.compareAndSet(...args);throw new Error('Synthetic lost response')}};const b=createGrantReadyStore(async()=>data,uncertain);await assert.rejects(b.act(s.token,1,'approve','B',true),/lost response/);assert.equal((await a.status(s.token)).view.approvedId,'B');await assert.rejects(a.act(s.token,1,'approve','A',true),/already approved/);});
+test('expired sessions cannot approve or return successful status',async()=>{const backend=createMemoryCampaignStorage();await backend.compareAndSet('expired',null,'value',-1);assert.equal(await backend.get('expired'),null);});
+test('restoring corrupted snapshot fails without replacing stored drafts',()=>{const d=fixture(),f=new GrantReadyWorkflow(d),snap=f.snapshot();snap.state.loop.history[0].posts[0].content='altered';assert.throws(()=>GrantReadyWorkflow.restore(d,snap),/inconsistent/);});
+test('shared instance revalidates revoked claims before approval',async()=>{const {a,b,data}=sharedStores(),s=await a.begin();data.registry.claims[0].status='revoked';await assert.rejects(b.act(s.token,1,'approve','B',true));assert.equal((await a.status(s.token)).view.approvedId,null);});
+test('Redis transport errors are sanitized and never successful',async()=>{const original=global.fetch;global.fetch=async()=>{throw new Error('secret credential')};try{const backend=createRedisCampaignStorage('https://example.invalid','synthetic');await assert.rejects(backend.get('key'),e=>/not confirmed/.test(e.message)&&!e.message.includes('secret'));await assert.rejects(backend.compareAndSet('key',null,'value',30),/unavailable/);}finally{global.fetch=original;}});
+test('Redis adapter sends authenticated no-cache requests and atomic CAS',async()=>{const original=global.fetch,calls=[];global.fetch=async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({result:JSON.parse(options.body)[0]==='GET'?null:1})}};try{const backend=createRedisCampaignStorage('https://example.invalid','synthetic');assert.equal(await backend.get('key'),null);assert.equal(await backend.compareAndSet('key',null,'value',30),true);assert.equal(calls[0].options.cache,'no-store');assert.equal(calls[1].options.headers.Authorization,'Bearer synthetic');assert.equal(JSON.parse(calls[1].options.body)[0],'EVAL');}finally{global.fetch=original;}});
+test('production without shared configuration fails closed',()=>{const saved={...process.env};try{delete process.env.GRANTREADY_REDIS_REST_URL;delete process.env.GRANTREADY_REDIS_REST_TOKEN;delete process.env.KV_REST_API_URL;delete process.env.KV_REST_API_TOKEN;process.env.NODE_ENV='production';assert.throws(()=>configuredCampaignStorage(),/not configured/);}finally{process.env=saved;}});
+test('concurrent revision and approval cannot both commit against the same reviewed cycle',async()=>{const {a,b}=sharedStores(),s=await a.begin();const r=await Promise.allSettled([a.act(s.token,1,'revise','shorter'),b.act(s.token,1,'approve','B',true)]);assert.equal(r.filter(x=>x.status==='fulfilled').length,1);const v=(await a.status(s.token)).view;assert.ok((v.loop.currentCycle===2&&v.approvedId===null)||(v.loop.currentCycle===1&&v.approvedId==='B'));});
+test('repeated CAS contention never reports uncommitted approval',async()=>{const {a,backend,data}=sharedStores(),s=await a.begin();const b=createGrantReadyStore(async()=>data,{get:k=>backend.get(k),compareAndSet:async()=>false});await assert.rejects(b.act(s.token,1,'approve','B',true),/changed during/);assert.equal((await a.status(s.token)).view.approvedId,null);});
+test('Redis command errors and HTTP errors never expose service response as success',async()=>{const original=global.fetch;try{for(const response of [{ok:false},{ok:true,json:async()=>({error:'sensitive'})},{ok:true,json:async()=>({})}]){global.fetch=async()=>response;await assert.rejects(createRedisCampaignStorage('https://example.invalid','synthetic').get('key'),/unavailable/);}}finally{global.fetch=original;}});
+test('Redis CAS collision and malformed command result are distinguished',async()=>{const original=global.fetch;try{global.fetch=async()=>({ok:true,json:async()=>({result:0})});const storage=createRedisCampaignStorage('https://example.invalid','synthetic');assert.equal(await storage.compareAndSet('key','old','new',60),false);global.fetch=async()=>({ok:true,json:async()=>({result:'not-a-result'})});await assert.rejects(storage.compareAndSet('key','old','new',60),/Invalid/);}finally{global.fetch=original;}});
+test('expired record and unsupported snapshot version fail safely',async()=>{const {backend,data}=sharedStores();const flow=new GrantReadyWorkflow(data),snapshot=flow.snapshot();snapshot.version=2;assert.throws(()=>GrantReadyWorkflow.restore(data,snapshot),/Unsupported/);snapshot.version=1;const b=createGrantReadyStore(async()=>data,backend);await backend.compareAndSet('grantready:v1:expired',null,JSON.stringify({expires:Date.now()-1,snapshot,approvedAt:null}),60);await assert.rejects(b.status('expired'),/expired/);await assert.rejects(b.act('expired',1,'approve','B',true),/expired/);});
+test('corrupted stored approval status is not returned as a successful decision',async()=>{const backend=createMemoryCampaignStorage(),data=fixture(),store=createGrantReadyStore(async()=>data,backend);await backend.compareAndSet('grantready:v1:damaged',null,JSON.stringify({expires:Date.now()+60000,snapshot:{version:1,state:{approvedId:'B'}}}),60);await assert.rejects(store.status('damaged'),/cannot be confirmed/);await assert.rejects(store.act('damaged',1,'approve','B',true),/cannot be confirmed/);});
+
+async function withStorageEnvironment(values, run) {
+  const saved={...process.env}, originalFetch=global.fetch;
+  try {
+    for(const name of ['GRANTREADY_REDIS_REST_URL','GRANTREADY_REDIS_REST_TOKEN','KV_REST_API_URL','KV_REST_API_TOKEN']) delete process.env[name];
+    Object.assign(process.env,values);
+    await run();
+  } finally { process.env=saved; global.fetch=originalFetch; }
+}
+for(const prefix of ['GRANTREADY_REDIS_REST','KV_REST_API'])test(`complete ${prefix} environment pair configures authenticated HTTPS storage`,async()=>{
+  await withStorageEnvironment({[prefix+'_URL']:'https://synthetic.invalid',[prefix+'_TOKEN']:'synthetic-test-token'},async()=>{
+    let request;global.fetch=async(url,options)=>{request={url,options};return {ok:true,json:async()=>({result:null})}};
+    assert.equal(await configuredCampaignStorage().get('test'),null);
+    assert.equal(request.url,'https://synthetic.invalid');assert.equal(request.options.headers.Authorization,'Bearer synthetic-test-token');
+  });
+});
+test('explicit Content-only pair takes precedence over complete Vercel aliases',async()=>{
+  await withStorageEnvironment({GRANTREADY_REDIS_REST_URL:'https://explicit.invalid',GRANTREADY_REDIS_REST_TOKEN:'explicit-synthetic',KV_REST_API_URL:'https://alias.invalid',KV_REST_API_TOKEN:'alias-synthetic'},async()=>{
+    global.fetch=async(url,options)=>{assert.equal(url,'https://explicit.invalid');assert.equal(options.headers.Authorization,'Bearer explicit-synthetic');return {ok:true,json:async()=>({result:null})}};
+    await configuredCampaignStorage().get('test');
+  });
+});
+for(const values of [
+  {KV_REST_API_URL:'https://alias.invalid'},
+  {GRANTREADY_REDIS_REST_URL:'https://explicit.invalid',KV_REST_API_URL:'https://alias.invalid',KV_REST_API_TOKEN:'alias-synthetic'},
+  {GRANTREADY_REDIS_REST_URL:'https://explicit.invalid',KV_REST_API_TOKEN:'alias-synthetic'},
+])test('incomplete or mixed environment credential pairs fail closed: '+Object.keys(values).join(', '),async()=>{
+  await withStorageEnvironment(values,async()=>{assert.throws(()=>configuredCampaignStorage(),/complete/);});
+});
+test('Vercel aliases drive complete synthetic three-cycle workflow and atomic exactly-one approval across instances',async()=>{
+  await withStorageEnvironment({KV_REST_API_URL:'https://synthetic.invalid',KV_REST_API_TOKEN:'synthetic-test-only',NODE_ENV:'production'},async()=>{
+    const backend=createMemoryCampaignStorage();
+    global.fetch=async(url,options)=>{
+      assert.equal(url,'https://synthetic.invalid');assert.equal(options.headers.Authorization,'Bearer synthetic-test-only');
+      const command=JSON.parse(options.body);let result;
+      if(command[0]==='GET')result=await backend.get(command[1]);
+      else {assert.equal(command[0],'EVAL');result=await backend.compareAndSet(command[3],command[4]==='0'?null:command[5],command[6],command[7])?1:0;}
+      return {ok:true,json:async()=>({result})};
+    };
+    const data=fixture(),a=createGrantReadyStore(async()=>structuredClone(data)),b=createGrantReadyStore(async()=>structuredClone(data));
+    const session=await a.begin();await b.act(session.token,1,'revise','Make both posts shorter');await a.act(session.token,2,'revise','Add more detail and end with a question');
+    await assert.rejects(b.act(session.token,3,'approve','B',false),/Human approval/);
+    const decisions=await Promise.allSettled([a.act(session.token,3,'approve','B',true),b.act(session.token,3,'approve','A',true)]);
+    assert.equal(decisions.filter(r=>r.status==='fulfilled').length,1);assert.equal(decisions.filter(r=>r.status==='rejected').length,1);
+    const winner=decisions.find(r=>r.status==='fulfilled').value.approvedId;
+    const restarted=createGrantReadyStore(async()=>structuredClone(data)),status=await restarted.status(session.token);
+    assert.equal(status.view.approvedId,winner);assert.equal(status.view.loop.history.length,3);assert.ok(status.view.loop.history.every(c=>c.posts.length===2));
+    assert.equal((await restarted.act(session.token,3,'approve',winner,true)).approvedId,winner);
+    await assert.rejects(restarted.act(session.token,3,'approve',winner==='A'?'B':'A',true),/already approved/);
+    assert.deepEqual(await restarted.status(session.token),status);
+  });
+});

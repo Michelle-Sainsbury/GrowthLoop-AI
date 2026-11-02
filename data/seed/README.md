@@ -33,7 +33,7 @@ The protected workflow uses the original framing/revision engine:
 3. Second revision (Cycle 3).
 4. Separate explicit human approval, which stops the loop.
 
-Every action reloads authorization, claims, and policy, validates the output history, and checks the original campaign snapshot. Changed inputs require a new campaign and fresh review. Pending, revoked, rejected, missing, or unauthorized claims block advancement and approval. Unsupported/prohibited feedback, stale actions, fourth cycles, and post-approval actions fail without changing session state.
+Generation, revisions and new approvals reload authorization, claims, and policy, validate the output history, and check the original campaign snapshot. Changed inputs require a new campaign and fresh review. Pending, revoked, rejected, missing, or unauthorized claims block advancement and approval. Unsupported/prohibited feedback, stale actions, fourth cycles, and conflicting post-approval actions fail without changing session state. Identical approval retries recover the existing decision without recording another approval.
 
 The three-cycle framing workflow is distinct from the five-variable controlled experiment adapter. Existing core generator/revision/approval functions and legacy dashboard behavior remain unchanged; direct legacy calls do not automatically acquire the new checks.
 
@@ -45,7 +45,9 @@ A policy-compliant evaluation sample is not a publication-approved draft. Noncom
 
 ## Session and environment limits
 
-Drafts are temporary server-owned memory. Sessions expire after one hour or server restart and are capped at 100. They are not persistent Experiment Memory or a distributed session store. The random session token isolates workflow state; the human checkbox does not independently authenticate a person's identity.
+Production requires Content-only shared Redis REST storage, configured through server-only environment variables. Sessions and approval receipts expire one hour after creation; they survive application restarts and instance changes while retained by the configured service. Development defaults to process memory and does not provide that durability. This storage is separate from Shawn's Experiment Memory. The random session token is a bearer capability; the human checkbox does not authenticate a person's identity. See [session storage configuration and limitations](session-storage.md).
+
+Approval is atomic: one selected variation wins, repeated requests for the same decision return the saved result, and conflicting decisions fail. A lost response is treated as uncertain until saved status is checked. Recovery is available in the same browser tab after reload; clearing tab storage or expiry prevents recovery. Recovery reads existing decisions and does not approve drafts again.
 
 `GRANTREADY_DATA_DIR` is trusted server-only configuration for isolated fixture directories, never a request parameter. Any override displays a synthetic-fixture banner. Do not use synthetic authorizations for a real campaign. Normal use reads these actual authorized files.
 
@@ -53,7 +55,9 @@ Geist and Geist Mono are bundled locally; the build needs no Google Fonts reques
 
 ## Testing evidence for this PR
 
-**Local automated verification:** `npm test` passed **84 tests, 0 failed, 0 skipped**. This includes the original Content tests, seed/authorization validation, all five controlled variables, protected three-cycle revisions, claim withdrawal/revocation, prohibited language, failed-action state preservation, concurrency/stale actions, and explicit approval requirements. Local TypeScript, lint, and production build also passed. The final pre-PR rerun confirmed these results; its logs are retained in the local evidence bundle.
+**Local automated verification:** `npm test` passed **104 tests, 0 failed, 0 skipped**. This includes the original Content tests, seed/authorization validation, all five controlled variables, protected three-cycle revisions, claim withdrawal/revocation, prohibited language, failed-action state preservation, concurrency/stale actions, and explicit approval requirements. Local TypeScript, lint, and production build also passed. The final pre-PR rerun confirmed these results; its logs are retained in the local evidence bundle.
+
+**Current approval-reliability browser checks:** four synthetic local Chromium tests passed (desktop/mobile, repeated clicks, dropped approval response and missing-session recovery). One additional local production-build browser test passed: missing shared-storage configuration blocks generation, and both `/grantready` and the original `/` route load. No real deployed draft was approved.
 
 **Previously executed local browser checks:** two production-build Chromium walkthroughs used the actual authorized campaign at desktop (1280 px) and mobile (390 px). Both passed generation and two revisions, retained both exact claims, and left drafts unapproved with approval buttons disabled until an explicit human decision. Separate earlier checks exercised the original dashboard and synthetic revocation/approval cases. No deployed Safari or Vercel result is implied.
 

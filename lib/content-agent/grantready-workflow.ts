@@ -40,6 +40,19 @@ export class GrantReadyWorkflow {
     this.#state = { loop: validateLoop(startRevisionLoop(current.brief), current), approvedId: null };
     this.#fingerprint = current.fingerprint;
   }
+  snapshot() { return { version: 1 as const, fingerprint: this.#fingerprint, state: this.view() }; }
+  static restore(data: GrantReadyData, snapshot: ReturnType<GrantReadyWorkflow["snapshot"]>) {
+    if (snapshot.version !== 1) throw new Error("Unsupported stored campaign version.");
+    const flow = new GrantReadyWorkflow(data);
+    if (flow.#fingerprint !== snapshot.fingerprint) throw new Error("Campaign, claims or policy changed. Start a new campaign and review the new drafts.");
+    const state = snapshot.state;
+    if (!state || ![null, "A", "B"].includes(state.approvedId) || !Array.isArray(state.loop?.history) || state.loop.history.length < 1 || state.loop.history.length > 3)
+      throw new Error("Stored campaign is invalid.");
+    for (const entry of state.loop.history.slice(1)) flow.revise(data, entry.feedback, flow.view().loop.currentCycle);
+    if (JSON.stringify(flow.view().loop) !== JSON.stringify(state.loop)) throw new Error("Stored campaign drafts are inconsistent.");
+    flow.#state = structuredClone(state);
+    return flow;
+  }
   view(): GrantReadyView { return structuredClone(this.#state); }
   #current(data: GrantReadyData, expectedCycle: number) {
     if (this.#state.approvedId) throw new Error("This campaign is already approved. The revision loop has stopped.");

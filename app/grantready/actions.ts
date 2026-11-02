@@ -7,8 +7,17 @@ export async function startGrantReady() {
 }
 export async function updateGrantReady(token: string, cycle: number, action: "revise" | "approve", value: string, human = false) {
   try {
-    if (typeof token !== "string" || !Number.isInteger(cycle) || !["revise", "approve"].includes(action) || typeof value !== "string" || typeof human !== "boolean")
+    if (typeof token !== "string" || !/^[0-9a-f-]{36}$/i.test(token) || !Number.isInteger(cycle) || !["revise", "approve"].includes(action) || typeof value !== "string" || typeof human !== "boolean")
       throw new Error("Invalid campaign action.");
     return { ok: true as const, view: await grantReadyStore.act(token, cycle, action, value, human) };
   } catch (error) { return { ok: false as const, error: error instanceof Error ? error.message : "Campaign action failed." }; }
+}
+
+export async function getGrantReadyStatus(token: string) {
+  try {
+    if (typeof token !== "string" || !/^[0-9a-f-]{36}$/i.test(token)) throw new Error("Invalid campaign session.");
+    return { ok: true as const, ...await grantReadyStore.status(token) };
+  } catch (error) {
+    return { ok: false as const, error: error instanceof Error ? error.message : "Approval status could not be confirmed." };
+  }
 }
